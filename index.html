@@ -1,269 +1,257 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Bundle Script — Aman & Rapi</title>
+  <title>Slot Mahjong – Safe Runner</title>
   <style>
-    :root { color-scheme: light dark; }
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin:0; }
-    header, footer { padding:16px 20px; background:#f5f5f5; border-bottom:1px solid #e5e5e5; }
-    @media (prefers-color-scheme: dark){
-      header, footer { background:#111; border-color:#222; }
+    :root{
+      --bg:#0b1020; --panel:#121a33; --muted:#8ea1c0; --text:#e9f0ff; --accent:#34d399; --warn:#f59e0b; --danger:#ef4444;
+      --card:#0f1530; --ring:#1f2d5c;
     }
-    main { padding:16px 20px; display:grid; gap:14px; }
-    .card { border:1px solid #e5e5e5; border-radius:14px; padding:14px; background:#fff; }
-    @media (prefers-color-scheme: dark){
-      .card { background:#0d0d0d; border-color:#222; }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;
+      color:var(--text); background: radial-gradient(1000px 600px at 20% -10%, #1a2550 0%, transparent 60%), var(--bg);
     }
-    .toolbar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
-    button {
-      cursor:pointer; border:1px solid #ccc; background:#fafafa; padding:8px 12px; border-radius:10px;
+    .wrap{max-width:1100px;margin:24px auto;padding:16px}
+    header{
+      display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px;
     }
-    button:hover { background:#f0f0f0; }
-    pre, code, textarea { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
-    textarea { width:100%; min-height:220px; padding:10px; border-radius:10px; border:1px solid #ddd; }
-    #log { max-height:240px; overflow:auto; background:#0b1020; color:#e5f0ff; padding:10px; border-radius:10px; }
-    .ok { color:#3fb950; }
-    .warn { color:#d29922; }
-    .err { color:#f85149; }
-    small.mono { font-family: ui-monospace, monospace; opacity:.9; }
+    h1{font-size:20px;margin:0}
+    .btn{appearance:none;border:0;border-radius:14px;padding:10px 14px;background:var(--accent);color:#052016;
+      font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(52,211,153,.25);transition:.2s transform,.2s opacity}
+    .btn:active{transform:translateY(1px)}
+    .btn.secondary{background:#334155;color:#e2e8f0;box-shadow:none}
+    .btn.warn{background:var(--warn);color:#1f1404}
+    .btn.danger{background:var(--danger);color:#2b0b0b}
+    .grid{display:grid;grid-template-columns: 1fr 320px; gap:16px}
+    @media (max-width:960px){.grid{grid-template-columns:1fr}}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.03), transparent 35%), var(--card); border:1px solid #1d274d; border-radius:18px; padding:14px; box-shadow: inset 0 0 0 1px rgba(31,45,92,.25), 0 8px 24px rgba(0,0,0,.25)}
+    canvas{width:100%; height:420px; background: #0b1230; border-radius:14px; border:1px solid #1a2346; display:block}
+    .row{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+    .row .btn{padding:9px 12px}
+    .label{font-size:12px;color:var(--muted)}
+    .kbd{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; background:#0b1433; border:1px solid #1d2b5a;padding:2px 6px;border-radius:6px;color:#c7d7ff}
+    .stat{display:grid;grid-template-columns:1fr 1fr; gap:10px}
+    .stat .box{background:#0c1536;border:1px solid #16245a;border-radius:12px;padding:10px}
+    .muted{color:var(--muted)}
+    details{background:#0b1330;border:1px solid #1a254f;border-radius:12px;padding:10px}
+    summary{cursor:pointer;font-weight:700}
+    textarea{
+      width:100%; min-height:180px; background:#07102b; color:#dbe7ff; border-radius:12px; border:1px solid #16245a;
+      outline:none; padding:10px; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px;
+    }
+    .ok{color:#34d399} .bad{color:#ef4444}
   </style>
 </head>
 <body>
-  <header>
-    <strong>Script Anda — versi aman & rapi</strong><br>
-    <small class="mono">Tidak ada bagian yang dibuang; saya hanya menambahkan shim agar halaman bisa berjalan.</small>
-  </header>
-
-  <main>
-    <section class="card">
-      <div class="toolbar">
-        <button id="btn-run">Jalankan</button>
-        <button id="btn-validate">Validasi Cepat</button>
-        <button id="btn-copy">Salin HTML Ini</button>
-        <span id="status" style="margin-left:auto; font-size:12px; opacity:.8;">Siap.</span>
+  <div class="wrap">
+    <header>
+      <h1>🀄 Slot Mahjong — Safe Runner</h1>
+      <div class="row">
+        <button id="btnSpin" class="btn">🎰 SPIN</button>
+        <button id="btnAuto" class="btn secondary">▶ Auto</button>
+        <button id="btnStop" class="btn danger" disabled>⏹ Stop</button>
       </div>
-      <textarea id="src" spellcheck="false"></textarea>
-    </section>
+    </header>
 
-    <section class="card">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-        <strong>Log Eksekusi</strong>
-        <small class="mono" style="opacity:.7;">(Console dialihkan ke panel ini)</small>
+    <div class="grid">
+      <div class="card">
+        <canvas id="stage" width="960" height="420"></canvas>
+        <div class="row" style="margin-top:10px">
+          <label class="label"><input id="safeMode" type="checkbox" checked /> Safe Mode (pakai fallback jika script asli error)</label>
+          <span class="label">• RTP (mock): <span id="rtp" class="kbd">96.1%</span></span>
+          <span class="label">• State: <span id="state" class="kbd">idle</span></span>
+        </div>
       </div>
-      <pre id="log"></pre>
-    </section>
-  </main>
 
-  <footer>
-    <small class="mono">Tips: Tempelkan sisa script asli Anda di area yang ditandai “PASTE THE REST…”, lalu klik “Jalankan”.</small>
-  </footer>
+      <div class="card">
+        <div class="stat" style="margin-bottom:10px">
+          <div class="box">
+            <div class="label">Saldo</div>
+            <div id="bal" style="font-size:22px;font-weight:800">10,000</div>
+          </div>
+          <div class="box">
+            <div class="label">Taruhan</div>
+            <div class="row">
+              <button class="btn secondary" id="betDown">-</button>
+              <div id="bet" class="kbd" style="font-size:16px">100</div>
+              <button class="btn secondary" id="betUp">+</button>
+            </div>
+          </div>
+        </div>
+
+        <details open>
+          <summary>Script Asli (ditampung | tidak dibuang)</summary>
+          <p class="muted">Blok di bawah ini menampung script obfuscated milikmu. Runner akan mencoba mengeksekusi isinya. Jika gagal, fallback akan aktif.</p>
+          <textarea id="original-js" spellcheck="false"><!-- BEGIN: ORIGINAL CODE FROM YOU -->
+0x62e,-0x2f4,0xad6)+cY(0x6c6,0x4d7,0xf17,0x58e,'FcGy')+cJ(0x2f3,'(XKz',0x6a4,0xc44,0xbd)+'io']=YZ,Yr[c7(0x78c,0x10c3,'Nkin',0xcd3,-0xf5)+c7(0x5d3,0x62a,'@7C6',0x633,-0x494)+'o']=Yz,Yr[c9(-0x4c,0x4c1,'u2MR',0x7b1,0x96f)+c9(0xc13,0x6b7,'u2MR',0xe13,0x714)+'n']=Yl,Yr[c8(0xd1d,0x649,'Nkin',0xdaf,0xafd)]=Yb,Yr[cY(-0x587,-0x640,-0x4a6,0x7e,'kJkf')+'on']=Yp,Yr[cJ(0x31b,'%HST',0xa40,0x10f6,0x139a)]=YI,Yr[cJ(0x71b,'@CkT',0x7cc,0x60e,0x279)+cJ(0x1ab5,'s36q',0x15a4,0x1f81,0xc3d)]=Yu,Yr[c8(0x11f7,0x15ec,'u2MR',0x1e9b,0xe8b)+cJ(0x14e1,'DKdx',0xb1b,0x128f,0x767)+cY(0x11e,0x80f,-0x43d,0x6fc,'QCb6')+c8(0x1868,0x130c,'TaeG',0x19ae,0x10d3)]=Ya,Yr[cJ(0x71d,'9xKF',0x889,0x30f,0x7e5)]=YS,Yr[c7(0xcde,0x1ed,'FTOO',0x17dc,0x26d)]=YA,Yr[cY(0x430,0xbf6,-0x30,0xb02,'7C1l')+c7(-0xbd,-0xc2,'@CkT',-0x72,-0x540)]=Yo,Yr[c9(0x10c1,0x9bf,'lw(D',0x13e5,0x80c)]=YQ,Yr[cJ(0x1217,'Q3Ko',0xb8e,0x16ac,0x68f)+c7(0x43e,0xd75,'9f)z',0xe06,0x65d)]=YC,Yr[cJ(0x12d1,'fTFZ',0x1007,0xe37,0xfd3)+c7(0x142c,0x1803,'g(Mf',0xbe4,0x1065)+c7(0x152c,0x1689,'%xPV',0x15e3,0x159f)]=Yi,YP[c9(0x150e,0x1080,'u2MR',0x12f9,0x114f)](Yf,Yr);}else Y7[c9(0x11c2,0x107c,'3WRK',0x15d4,0xed6)](ve,Y8,Y7[c8(0x12b8,0x144d,'@7C6',0xeba,0x1f45)],'0'),Y7[cY(0x514,0xf22,0xdf6,0xc47,'!2!z')](setTimeout,function(){var Yr={'mOUQW':function(YK,Yc,YV,YH){function cj(Y4,Y5,Y6,Y7,Y8){return Y3(Y4- -0x193,Y8);}return Y7[cj(0x8d5,0x14f,0x767,-0x1fe,'3WRK')](YK,Yc,YV,YH);},'VSHsz':function(YK,Yc,YV,YH){function cm(Y4,Y5,Y6,Y7,Y8){return Y3(Y8- -0xe,Y5);}return Y7[cm(0x88d,'lw(D',0x1788,0xce3,0x1383)](YK,Yc,YV,YH);},'qwjIV':Y7[cx(0x1049,0x19d9,'6x5P',0x1687,0x1c28)],'Duqaz':Y7[cN(-0xe6,0x136c,'ejXi',0xf2e,0x92f)],'iWFoc':Y7[cN(-0x3af,-0x338,'g(Mf',-0x27e,-0xf3)],'hNlMC':function(YK,Yc){function cX(Y4,Y5,Y6,Y7,Y8){return cx(Y4-0xf1,Y5-0x68,Y8,Y5- -0x69,Y8-0x18b);}return Y7[cX(0x10a1,0xb20,0xb42,0x564,'ju8h')](YK,Yc);},'Pmglh':Y7[cU('kJkf',0x1b85,0x71d,0x1797,0x120b)]};function cU(Y4,Y5,Y6,Y7,Y8){return cY(Y4-0xa9,Y5-0x1da,Y6-0x9c,Y8-0x127,Y4);}function cg(Y4,Y5,Y6,Y7,Y8){return c9(Y4-0x24,Y5- -0x572,Y7,Y7-0x1ec,Y8-0x1e7);}function cN(Y4,Y5,Y6,Y7,Y8){return cY(Y4-0x1a1,Y5-0x1b7,Y6-0x1ef,Y8- -0x2c,Y6);}function cx(Y4,Y5,Y6,Y7,Y8){return cY(Y4-0x196,Y5-0xe7,Y6-0xa2,Y7-0x530,Y6);}function cr(Y4,Y5,Y6,Y7,Y8){return c9(Y4-0x4c,Y5- -0x3fb,Y4,Y7-0x1df,Y8-0x103);}if(Y7[cg(0x202,0xc9a,0x284,'9^bC',0xd79)](Y7[cg(0x154,0x33a,0xa88,'tlt&',0xdce)],Y7[cr('ejXi',0xb8b,0xf53,0x539,0x3df)])){var Yg,Ye,YL;Y7[cg(0x511,-0x128,-0x15b,'d(3!',0x359)](-0x25*-0xe7+-0xb*-0x22d+-0x3951,Y5)&&Y9['F'](),Y7[cr('TaeG',0x1155,0x17ea,0x1613,0x1c5a)](Yx),Y7[cr('0dPe',0x14f,0x66,-0x6cc,0x58b)](null,Yg=YN[cr('f3yk',0x22b,0xae5,0x5bd,0xd05)+cN(0xcd3,0x892,'r(NP',0xbb7,0x471)])||Y7[cN(0x10bc,0x136f,'%xPV',0x1521,0x11a3)](void(0xed7*-0x1+0x1*0xc05+-0x13*-0x26),Yg)||Yg[cg(0x159,0x47d,-0x12e,'TaeG',0x3dd)+cN(0xcab,0xfa6,'Q3Ko',0x143a,0x9d6)+'d'](YN),Y7[cg(0x118b,0xe4a,0xb79,'0dPe',0x7f4)](null,Ye=Yj[cU('lw(D',0x482,0x5ce,0x9ca,0xb47)+cN(0xd95,-0x843,'GyU0',0x67d,0x2d8)])||Y7[cN(0x191b,0x14d8,'sP$3',0x16f1,0x10b2)](void(-0x6*-0x637+-0x69*-0x5b+-0x4a9d),Ye)||Ye[cU('GG8&',0x1123,0x19b8,0x1321,0x110a)+cN(0x10fa,0xb91,'ejXi',-0x111,0x82f)+'d'](Yj),Y7[cU('GG8&',0x1a83,0x1dd9,0xd41,0x12a4)](null,YL=Y8[cU('nN#M',0xd3c,0xb8c,0xfdd,0x1341)+cr('ejXi',0x14cc,0xcb4,0x1450,0x1bc7)])||Y7[cg(0x1283,0xf88,0xb7f,'TaeG',0x606)](void(-0x5d1*0x5+0x2dd*-0x5+0x2b66),YL)||YL[cg(0xe80,0xc08,0x783,'H*^t',0xc18)+cg(-0x43,0x4c8,0x305,'9^bC',0xfeb)+'d'](Y8),YX&&Y7[cg(0xa59,0x497,-0x49,'0dPe',-0x2ed)](YX);}else{Yr[cg(0x498,0xf05,0x67a,'7C1l',0x952)](YJ,Yj=Yr[cU('EJRX',0xa85,0x36d,0x1f2,0x556)](Ym,Yx,Yr[cx(0xe34,0x151b,'nN#M',0x1347,0x19fc)],0x1506+-0x537+0x39*-0x47),Yr[cg(0xc93,0x648,-0x495,'cQc]',0x5a7)],Yr[cx(0x1377,0x1715,'ejXi',0x180f,0x1199)]);for(var YK=-0x90f*0x4+-0x240f+x484b;Yr[cN(-0x34e,0x75e,'@CkT',0xf96,0x7f2)](YK,-0x2304+0x437+0x1ed0);YK++)Yr[cU('9xKF',0x1687,0x1759,0xc89,0x127d)](YN,Yr[cU('GG8&',0x12cb,0x636,0x694,0xe48)](YU,YX,Yr[cg(-0x505,-0xd5,0x4c5,'s2Xo',0x673)],0x1de2+-0x1b43+0x3d*-0xb),Yr[cx(0x949,0x1309,'$EVR',0xbea,0x161e)],Yr[cr('ejXi',0x144a,0x1bfc,0xd60,0x1ae1)]);}}
+<!-- END: ORIGINAL CODE FROM YOU --></textarea>
+          <div class="row" style="margin-top:8px">
+            <button id="btnRunOriginal" class="btn warn">⚙ Jalankan Script Asli</button>
+            <span id="execStatus" class="label">Status: <span class="kbd">belum dieksekusi</span></span>
+          </div>
+        </details>
+
+        <details>
+          <summary>Log</summary>
+          <pre id="log" style="white-space:pre-wrap;max-height:220px;overflow:auto;margin:6px 0 0"></pre>
+        </details>
+      </div>
+    </div>
+  </div>
 
   <script>
-    // --- Console to panel ----------------------------------------------------
-    (function hookConsole(){
-      const logEl = document.getElementById('log');
-      const write = (cls, ...args) => {
-        const line = document.createElement('div');
-        line.className = cls;
-        try { line.textContent = args.map(a => typeof a === 'string' ? a : JSON.stringify(a)).join(' '); }
-        catch { line.textContent = args.join(' '); }
-        logEl.appendChild(line);
-        logEl.scrollTop = logEl.scrollHeight;
-      };
-      const orig = { log:console.log, warn:console.warn, error:console.error, info:console.info };
-      console.log = (...a)=>{ write('ok', ...a); orig.log.apply(console,a); };
-      console.warn = (...a)=>{ write('warn', ...a); orig.warn.apply(console,a); };
-      console.error = (...a)=>{ write('err', ...a); orig.error.apply(console,a); };
-      console.info = (...a)=>{ write('', ...a); orig.info.apply(console,a); };
-      window.__restoreConsole = () => Object.assign(console, orig);
+    // =============== Utility ===============
+    const $ = (s, r=document)=>r.querySelector(s);
+    const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
+    const log = (...a)=>{ const el=$("#log"); el.textContent += a.map(x=>typeof x==='string'?x:JSON.stringify(x)).join(' ') + "\\n"; el.scrollTop = el.scrollHeight; }
+    const fmt = n => new Intl.NumberFormat('id-ID').format(n);
+
+    // =============== Simple Mahjong Symbols (for fallback) ===============
+    const TILES = ["🀄","🀇","🀈","🀉","🀊","🀋","🀌","🀍","🀎","🀏","🀙","🀚","🀛","🀜","🀝","🀞","🀟","🀠","🀡"];
+
+    // =============== Fallback Engine (aman) ===============
+    const Engine = (() => {
+      const cols=5, rows=3;
+      let reels = Array.from({length:cols},()=>Array.from({length:rows},()=>TILES[Math.floor(Math.random()*TILES.length)]));
+      let spinning=false;
+
+      function spin(){
+        spinning=true;
+        // deterministic-ish mock RNG
+        reels = reels.map(col => col.map(()=> TILES[Math.floor(Math.random()*TILES.length)]));
+        // simple paylines: row matches
+        let win=0;
+        for(let r=0;r<rows;r++){
+          const row = reels.map(c=>c[r]);
+          const allSame = row.every(v=>v===row[0]);
+          if(allSame) win += 500;
+        }
+        spinning=false;
+        return {reels, win};
+      }
+
+      return { cols, rows, get reels(){return reels}, spin, get spinning(){return spinning} };
     })();
 
-    // --- Shim helper minimal (mencegah ReferenceError) ----------------------
-    // Catatan: ini hanya fallback aman. Jika fungsi asli tersedia di bagian lain
-    // skrip Anda, definisi asli akan menimpa shim ini.
-    (function shims(global){
-      const isFn = v => typeof v === 'function';
+    // =============== Canvas Renderer ===============
+    const cvs = $("#stage"), ctx = cvs.getContext("2d");
+    function drawScene(){
+      const {cols, rows, reels} = Engine;
+      const w=cvs.width, h=cvs.height;
+      ctx.clearRect(0,0,w,h);
+      // bg
+      const g = ctx.createLinearGradient(0,0,0,h);
+      g.addColorStop(0,"#0b1230"); g.addColorStop(1,"#0a0f24");
+      ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
 
-      function shim(name, impl){
-        if (!(name in global) || typeof global[name] !== 'function') {
-          Object.defineProperty(global, name, { value: impl, configurable: true, writable: true });
+      const cellW = Math.floor((w-60)/cols);
+      const cellH = Math.floor((h-60)/rows);
+      for(let x=0;x<cols;x++){
+        for(let y=0;y<rows;y++){
+          const px = 30 + x*cellW;
+          const py = 30 + y*cellH;
+          // panel
+          ctx.fillStyle = "#0f1a45";
+          ctx.strokeStyle = "#21306a";
+          ctx.lineWidth = 2;
+          roundRect(ctx, px+6, py+6, cellW-12, cellH-12, 12, true, true);
+          // tile
+          ctx.font = Math.floor(cellH*0.6) + "px serif";
+          ctx.textAlign="center"; ctx.textBaseline="middle";
+          ctx.fillStyle="#e8f2ff";
+          ctx.fillText(Engine.reels[x][y], px + (cellW/2), py + (cellH/2)+2);
         }
       }
+    }
+    function roundRect(ctx, x, y, w, h, r, fill, stroke){
+      if (w<2*r) r=w/2; if(h<2*r) r=h/2;
+      ctx.beginPath();
+      ctx.moveTo(x+r, y);
+      ctx.arcTo(x+w, y, x+w, y+h, r);
+      ctx.arcTo(x+w, y+h, x, y+h, r);
+      ctx.arcTo(x, y+h, x, y, r);
+      ctx.arcTo(x, y, x+w, y, r);
+      ctx.closePath();
+      if(fill) ctx.fill(); if(stroke) ctx.stroke();
+    }
 
-      // Converter util sederhana agar obfuscated-call tidak meledak
-      const num = x => (typeof x === 'number' && isFinite(x)) ? x : 0;
-      const str = x => (x==null) ? '' : String(x);
+    // =============== Wallet/Bet Mock ===============
+    const stateEl=$("#state"), balEl=$("#bal"), betEl=$("#bet");
+    let balance = 10000, bet = 100, auto=false, autoTimer=null;
 
-      // Fungsi yang sering muncul di fragmen Anda:
-      shim('jh', (a,b,c,d,e)=> str(a)+str(b)+str(c)+str(d)+str(e));
-      shim('jR', (a,b,c,d,e)=> str(a));
-      shim('jG', (a,b,c,d,e)=> num(a)+num(b)+num(c)+num(d)-num(e));
-      shim('jy', (a,b,c,d,e)=> str(e||d||c||b||a));
-      shim('f',  (x)=> x|0);
-      shim('ne', (x)=> x|0);
-      shim('se', (a,b,cb)=> { try{ if (typeof cb==='function') cb(null, true);}catch(e){} });
-      shim('J',  ()=> false);
+    function updateHUD(){
+      $("#rtp").textContent = "96.1%";
+      stateEl.textContent = Engine.spinning ? "spinning" : "idle";
+      balEl.textContent = fmt(balance);
+      betEl.textContent = fmt(bet);
+    }
 
-      // Beberapa global yang kemungkinan dipakai:
-      if (!('gtag' in global)) global.gtag = function(){ /* noop */ };
-      if (!('shell' in global)) global.shell = { exec(){}, openExternal(){}, showItemInFolder(){} };
-      if (!('Pe' in global)) global.Pe = { track(){}, trigger(){}, push(){}, postMessage(){} };
+    function doSpin(){
+      if(Engine.spinning) return;
+      if(balance < bet){ log("❗ Saldo tidak cukup"); return; }
+      stateEl.textContent = "spinning";
+      balance -= bet;
+      const {win} = Engine.spin();
+      balance += win;
+      log(`🎰 Spin selesai. Win: ${fmt(win)} | Saldo: ${fmt(balance)}`);
+      updateHUD();
+      drawScene();
+    }
 
-      // NodeList shortcut
-      if (!('qS' in global)) global.qS = (sel,root=document)=>root.querySelector(sel);
-      if (!('qSA' in global)) global.qSA = (sel,root=document)=>Array.from(root.querySelectorAll(sel));
-    })(window);
-
-    // --- Loader untuk skrip asli Anda ---------------------------------------
-    function runOriginal(sourceText){
-      const status = document.getElementById('status');
-      status.textContent = 'Menjalankan...';
-      try {
-        // Eksekusi di Function sandbox dengan akses window
-        const fn = new Function('window', `
-          "use strict";
-          try {
-            (function(){
-              // >>> BEGIN: ORIGINAL SCRIPT FRAGMENT (from your message)
-${originalFragment().replace(/<\/script>/gi, '<\\/script>')}
-              // <<< END: ORIGINAL SCRIPT FRAGMENT
-
-              // PASTE THE REST OF YOUR ORIGINAL SCRIPT HERE (jika ada)
-            })();
-          } catch(e){ console.error('Error di blok skrip asli:', e && e.message ? e.message : e); }
-        `);
-        fn(window);
-        status.textContent = 'Selesai.';
-        console.log('Eksekusi selesai.');
-      } catch (e) {
-        status.textContent = 'Gagal.';
-        console.error('Gagal eksekusi:', e);
+    // =============== Original Script Runner (safe) ===============
+    const safeMode = $("#safeMode");
+    const execStatus = $("#execStatus .kbd");
+    $("#btnRunOriginal").addEventListener("click", () => {
+      const code = $("#original-js").value || $("#original-js").textContent || "";
+      if(!code.trim()){ log("Tidak ada kode asli untuk dieksekusi."); execStatus.textContent="tidak ada kode"; return; }
+      try{
+        execStatus.textContent = "menjalankan…";
+        if(safeMode.checked){
+          // run in Function scope (no direct access to local vars)
+          const fn = new Function("console","document","window", `"use strict";\n${code}\n`);
+          fn(console, document, window);
+        }else{
+          eval(code);
+        }
+        execStatus.textContent = "OK";
+        log("✅ Script asli berhasil dieksekusi (atau tidak error).");
+      }catch(err){
+        execStatus.textContent = "gagal";
+        log("⛔ Gagal mengeksekusi script asli (fallback tetap jalan).");
+        log(String(err.stack || err));
       }
-    }
+    });
 
-    // --- Fragment asli Anda dimasukkan ke sini (apa adanya) -----------------
-    function originalFragment(){
-      return String.raw`
-function NT(Y4, Y5, Y6, Y7, Y8) {
-    return jh(Y4 - 0x19b, Y7, Y6 - 0x1d5, Y7 - 0x171, Y8 - 0x140);
-}
-function NL(Y4, Y5, Y6, Y7, Y8) {
-    return jR(Y5, Y6 - 0x120, Y6 - 0x41, Y4 - 0x1c6, Y8 - 0x1d5);
-}
-function Nc(Y4, Y5, Y6, Y7, Y8) {
-    return jG(Y5 - 0x17b, Y6 - 0x18, Y6 - 0x56, Y7 - 0x142, Y4);
-}
-function Ne(Y4, Y5, Y6, Y7, Y8) {
-    return jh(Y4 - 0x8a, Y5, Y6 - 0x47, Y7 - 0x74, Y6 - 0x25);
-}
-var Y5 = !![];
-return function (Y6, Y7) {
-    function NY(Y4, Y5, Y6, Y7, Y8) {
-        return NL(Y4 - 0x1b3, Y6, Y6 - 0x38, Y7 - 0x143, Y7 - -0x41a);
-    }
-    function Nl(Y4, Y5, Y6, Y7, Y8) {
-        return NK(Y4 - 0x16d, Y5 - 0x40, Y6, Y7 - 0x43, Y5 - -0x14e);
-    }
-    function Nr(Y4, Y5, Y6, Y7, Y8) {
-        return Nc(Y7, Y5 - -0x1ed, Y6 - 0x141, Y7 - 0x161, Y8 - 0x1a0);
-    }
-    function Nh(Y4, Y5, Y6, Y7, Y8) {
-        return NV(Y4 - 0x152, Y5 - 0x137, Y6 - -0xe6, Y7 - 0x136, Y4);
-    }
-    function NJ(Y4, Y5, Y6, Y7, Y8) {
-        return NL(Y4 - 0x16f, Y8, Y6 - 0x110, Y7 - 0x15, Y5 - -0x348);
-    }
-    var Y8 = {
-        'fEwWc': Y4['mfpjE'],
-        'wBeWe': function (Ya, Yb) {
-            function Nk(Y4, Y5, Y6, Y7, Y8) {
-                return f(Y4 - -0x3d7, Y5);
-            }
-            return Y4[Nk(-0x1bc, 'jK2*', -0x138, -0x250, 0x2e)](Ya, Yb);
-        },
-        'RkRnI': Y4[NJ(0x16f8, 0x146b, 0x1486, 0x12f6, 'GG8&')],
-        'ltknI': function (Ya, Yb, Yc) {
-            function Np(Y4, Y5, Y6, Y7, Y8) {
-                return NJ(Y4 - 0x139, Y5 - 0x1c7, Y6 - 0x198, Y7 - 0x153, Y8);
-            }
-            return Y4[Np(0x1596, 0x179b, 0x13e2, 0x1075, 'u2MR')](Ya, Yb, Yc);
-        },
-        'ozAXJ': Y4[NY(0xc49, 0x46c, 'u2MR', 0x3d2, 0x3a3)],
-        'BTeDV': function (Ya, Yb) {
-            function Nq(Y4, Y5, Y6, Y7, Y8) {
-                return Nr(Y4 - 0x129, Y5 - 0x88, Y6 - 0x184, Y5, Y8 - 0x13d);
-            }
-            return Y4[Nq(0xb47, 0x136b, 0x13cf, 'FTOO', 0xe8d)](Ya, Yb);
-        },
-        'zQdLJ': Y4[Nh('i%HQ', 0x1179, 0x15d6, 0x1e2a, 0x1795)],
-        'wsbKK': function (Ya, Yb) {
-            function Nw(Y4, Y5, Y6, Y7, Y8) {
-                return Nl(Y4 - 0x11e, Y5 - 0x4f0, Y7, Y6 - 0x62, Y8 - 0x7);
-            }
-            return Y4[Nw(0x1024, 0x153b, 0x1494, 'nN#M', 0x1180)](Ya, Yb);
-        },
-        'NBtQN': function (Ya) {
-            function Nn(Y4, Y5, Y6, Y7, Y8) {
-                return NJ(Y4 - 0x90, Y5 - 0xf1, Y6 - 0x12a, Y7 - 0x157, Y8);
-            }
-            return Y4[Nn(0x17f0, 0x12bb, 0x1a36, 0x1c4c, 'DKdx')](Ya);
-        },
-        'GeGnE': function (Ya, Yb) {
-            function No(Y4, Y5, Y6, Y7, Y8) {
-                return Nl(Y4 - 0x15e, Y5 - 0x47, Y8, Y7 - 0xd3, Y6 - -0x6a);
-            }
-            return Y4[No(0x4c2, 0x12a, 0x461, -0x70, '@7C6')](Ya, Yb);
-        },
-        'hrFqu': function (Ya, Yb) {
-            function Ny(Y4, Y5, Y6, Y7, Y8) {
-                return Nl(Y4 - 0x8e, Y5 - 0x83, Y6, Y7 - 0x1f8, Y8 - -0x1dd);
-            }
-            return Y4[Ny(0xe64, 0x10c6, 'i%HQ', 0x11db, 0x1473)](Ya, Yb);
-        },
-        'HNaIb': Y4[Nr(0x17ab, 0x19c8, 0x13d6, 'Zq#6', 0x1677)]
+    // =============== Controls ===============
+    $("#btnSpin").addEventListener("click", doSpin);
+    $("#betUp").addEventListener("click", ()=>{ bet = Math.min(5000, bet+50); updateHUD(); });
+    $("#betDown").addEventListener("click", ()=>{ bet = Math.max(50, bet-50); updateHUD(); });
+    $("#btnAuto").addEventListener("click", ()=>{
+      if(auto){ return; }
+      auto=true; $("#btnAuto").setAttribute("disabled",""); $("#btnStop").removeAttribute("disabled");
+      autoTimer = setInterval(()=>{ doSpin(); }, 800);
+    });
+    $("#btnStop").addEventListener("click", ()=>{
+      auto=false; $("#btnStop").setAttribute("disabled",""); $("#btnAuto").removeAttribute("disabled");
+      clearInterval(autoTimer);
+    });
+
+    // =============== Init ===============
+    drawScene(); updateHUD(); log("🟢 Runner siap. Kamu bisa SPIN atau jalankan script asli di panel kanan.");
+    // keep drawing on resize (pixel ratio)
+    const resize = () => {
+      const ratio = Math.min(Math.max(window.devicePixelRatio||1,1),2);
+      const rc = cvs.getBoundingClientRect();
+      cvs.width = Math.round(rc.width*ratio);
+      cvs.height= Math.round(420*ratio);
+      ctx.setTransform(ratio,0,0,ratio,0,0);
+      drawScene();
     };
-};`;
-    }
-
-    // --- UI wiring -----------------------------------------------------------
-    const srcArea = document.getElementById('src');
-    const btnRun = document.getElementById('btn-run');
-    const btnValidate = document.getElementById('btn-validate');
-    const btnCopy = document.getElementById('btn-copy');
-
-    // Muat fragment ke textarea saat awal
-    srcArea.value =
-`// Fragmen asli Anda dimuat otomatis di bawah saat eksekusi.
-// Jika Anda punya bagian tambahan, tempelkan setelah komentar "PASTE THE REST..."
-${originalFragment()}
-
-`;
-
-    btnRun.addEventListener('click', () => {
-      const userCode = srcArea.value || originalFragment();
-      // Gabungkan shim + user code
-      runOriginal(userCode);
-    });
-
-    btnValidate.addEventListener('click', () => {
-      try {
-        new Function(srcArea.value || originalFragment());
-        console.log('Validasi sintaks OK.');
-      } catch (e) {
-        console.warn('Validasi gagal:', e.message || e);
-      }
-    });
-
-    btnCopy.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(document.documentElement.outerHTML);
-        console.log('HTML ini berhasil disalin ke clipboard.');
-      } catch (e) {
-        console.warn('Gagal menyalin otomatis. Pilih semua lalu salin manual.');
-      }
-    });
+    new ResizeObserver(resize).observe(cvs);
   </script>
 </body>
 </html>
